@@ -1,9 +1,18 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
+import { router } from "./routes/product";
+import bodyParser from "body-parser";
+
 const app: Express = express();
-app.get("/test", (req:Request, res:Response) => {
-    res.send("Prueba producto")
-})
-app.listen(8000,() => {
-    console.log("ejecutando http://localhost:8000")
+
+// body parser
+app.use(bodyParser.json());       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
+
+app.use('/api', router)
+
+app.listen(8000, () => {
+    console.log("running at http://localhost:8000")
 })
 

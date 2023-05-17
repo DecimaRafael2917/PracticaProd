@@ -27,3 +27,16 @@ export const createProduct = (req: Request, res: Response) => {
         ...productNew
     })
 }
+
+export const deleteProduct = (req: Request, res: Response) => {
+    const productId = req.params.id;
+  
+    const index = products.findIndex(product => product.id === productId);
+    if (index === -1) {
+      return res.status(404).send({ message: 'Product not found' });
+    }
+  
+    products.splice(index, 1);
+  
+    res.status(200).send({ message: 'Product deleted successfully' });
+  }

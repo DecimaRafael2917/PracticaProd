@@ -33,7 +33,7 @@ export function getProductById(req:Request, res:Response){
     const { id } = req.params;
 
 
-    const product = products.filter(p =>p.name.toString() === id);
+    const product = products.filter(p =>p.id.toString() === id);
     if (product.length === 0) {
         return res.status(404).send({
             message: `product not exists ${id}`

@@ -6,4 +6,3 @@ export const router = Router();
 router.post('/products', createProduct);
 router.delete('/products/:id', deleteProduct);
 router.get('/products/:id', getProductById );
-// params /products/:id

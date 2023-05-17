@@ -1,22 +1,14 @@
 import { Request, Response } from "express";
 import { Product } from "../entities/product";
-import { randomUUID } from "crypto";
+import { connectMongo } from "../db/connect";
+import { ProductSchema } from "../db/schemas/product";
 
-const products: Product[] = [
-  { id: "1", name: "coca", price: 123, barcode: [] },
-  { id: "2", name: "pepsi", price: 321, barcode: [] },
-  { id: "3", name: "sprite", price: 432, barcode: [] }
-];
+const products: Product[] = [];
 
-export const createProduct = (req: Request, res: Response) => {
-  // const id = req.params.id;
+export const createProduct = async (req: Request, res: Response) => {
 
   // receive product from body
   const productNew: Product = req.body;
-    // const id = req.params.id;
-  const { id } = req.params;
-
-  console.log("PRODUCT", productNew);
 
   // validations
   if (productNew.price <= 0)
@@ -26,14 +18,29 @@ export const createProduct = (req: Request, res: Response) => {
   if (productNew.barcode.length <= 0)
     res.status(400).send({ message: "ERROR VALIDATION BARCODE" });
 
-  // save
-  productNew.id = randomUUID();
-  products.push(productNew);
+  try {
+    // connect mongo
+    const client = await connectMongo();
 
-  //response
-  res.status(202).send({
-    ...productNew,
-  });
+    // invoke schema
+    const productModel = client.model('Product', ProductSchema);
+
+    // create product in mongodb
+    const product = await productModel.create({
+      name: productNew.name,
+      price: productNew.price,
+      barcode: productNew.barcode
+    })
+
+    //response
+    res.status(202).send({
+      ...productNew,
+      id: product.id
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
 };
 
 export const deleteProduct = (req: Request, res: Response) => {
@@ -48,19 +55,19 @@ export const deleteProduct = (req: Request, res: Response) => {
 
   res.status(200).send({ message: "Product deleted successfully" });
 };
-    
-export function getProductById(req:Request, res:Response){
 
-    const { id } = req.params;
+export function getProductById(req: Request, res: Response) {
+
+  const { id } = req.params;
 
 
-    const product = products.filter(p =>p.id.toString() === id);
-    if (product.length === 0) {
-        return res.status(404).send({
-            message: `product not exists ${id}`
-        }).json();
-    } 
-    return res.send({
-        ...product[0]
+  const product = products.filter(p => p.id.toString() === id);
+  if (product.length === 0) {
+    return res.status(404).send({
+      message: `product not exists ${id}`
     }).json();
+  }
+  return res.send({
+    ...product[0]
+  }).json();
 }

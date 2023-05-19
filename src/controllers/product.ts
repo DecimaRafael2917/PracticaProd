@@ -6,7 +6,6 @@ import { ProductSchema } from "../db/schemas/product";
 const products: Product[] = [];
 
 export const createProduct = async (req: Request, res: Response) => {
-
   // receive product from body
   const productNew: Product = req.body;
 
@@ -23,24 +22,23 @@ export const createProduct = async (req: Request, res: Response) => {
     const client = await connectMongo();
 
     // invoke schema
-    const productModel = client.model('Product', ProductSchema);
+    const productModel = client.model("Product", ProductSchema);
 
     // create product in mongodb
     const product = await productModel.create({
       name: productNew.name,
       price: productNew.price,
-      barcode: productNew.barcode
-    })
+      barcode: productNew.barcode,
+    });
 
     //response
     res.status(202).send({
       ...productNew,
-      id: product.id
+      id: product.id,
     });
   } catch (error) {
     console.log(error);
   }
-
 };
 
 export const deleteProduct = (req: Request, res: Response) => {
@@ -56,39 +54,47 @@ export const deleteProduct = (req: Request, res: Response) => {
   res.status(200).send({ message: "Product deleted successfully" });
 };
 
-export function getProductById(req: Request, res: Response) {
-
+export async function getProductById(req: Request, res: Response) {
   const { id } = req.params;
 
+  // connect mongo
+  const client = await connectMongo();
+  const productModel = client.model("Product", ProductSchema);
 
-  const product = products.filter(p => p.id.toString() === id);
-  if (product.length === 0) {
-    return res.status(404).send({
-      message: `product not exists ${id}`
-    }).json();
-  }
-  return res.send({
-    ...product[0]
-  }).json();
+  const product = await productModel.findById(id);
+  const exist = product ? true : false;
+  if (exist)
+    return res
+      .send({
+        id: product?.id,
+        name: product?.name,
+        price: product?.price,
+        barcode: product?.barcode,
+      })
+      .json();
+  return res
+    .send({
+      message: `Product not exist id: ${id}`
+    })
+    .json();
 }
 export const getAllProduct = async (req: Request, res: Response) => {
   // connect mongo
   const client = await connectMongo();
 
   // invoke schema
-  const productModel = client.model('Product', ProductSchema);
+  const productModel = client.model("Product", ProductSchema);
   const productsMongo = await productModel.find();
   const products: Product[] = [];
 
-  productsMongo.map(pm => {
+  productsMongo.map((pm) => {
     products.push({
       id: pm.id,
       name: pm.name,
       price: pm.price,
-      barcode: pm.barcode
-    })
+      barcode: pm.barcode,
+    });
   });
 
-  return res.send({products}).json();
-
-} 
+  return res.send({ products }).json();
+};

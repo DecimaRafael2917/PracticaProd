@@ -71,3 +71,15 @@ export function getProductById(req: Request, res: Response) {
     ...product[0]
   }).json();
 }
+export const getAllProduct = async (req: Request, res: Response) => {
+  // connect mongo
+  const client =  await connectMongo();
+
+  // invoke schema
+  const productModel = client.model('Product', ProductSchema);
+  const products= await  productModel.find();
+  return res.send({
+    ...products
+  }).json();
+
+} 

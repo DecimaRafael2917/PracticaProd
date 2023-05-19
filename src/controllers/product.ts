@@ -73,13 +73,22 @@ export function getProductById(req: Request, res: Response) {
 }
 export const getAllProduct = async (req: Request, res: Response) => {
   // connect mongo
-  const client =  await connectMongo();
+  const client = await connectMongo();
 
   // invoke schema
   const productModel = client.model('Product', ProductSchema);
-  const products= await  productModel.find();
-  return res.send({
-    ...products
-  }).json();
+  const productsMongo = await productModel.find();
+  const products: Product[] = [];
+
+  productsMongo.map(pm => {
+    products.push({
+      id: pm.id,
+      name: pm.name,
+      price: pm.price,
+      barcode: pm.barcode
+    })
+  });
+
+  return res.send({products}).json();
 
 } 

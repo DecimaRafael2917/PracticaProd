@@ -1,6 +1,7 @@
+require('dotenv').config({ path: '.env' })
 import mongoose from 'mongoose';
 
-export const connectMongo = async () => {
-    const client = await mongoose.connect('mongodb+srv://Cluster61080:Q2lZTlNWTntS@cluster61080.jwi2wpr.mongodb.net/product-api?retryWrites=true&w=majority');
+export const connectMongo = async () => {    
+    const client = await mongoose.connect(`mongodb+srv://${process.env.USER_DB}:${process.env.PASS_DB}@${process.env.HOST_DB}?retryWrites=true&w=majority`);
     return client;
 }

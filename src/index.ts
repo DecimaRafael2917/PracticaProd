@@ -1,7 +1,6 @@
 import express, { Express } from "express";
 import { router } from "./routes/product";
 import bodyParser from "body-parser";
-import { connectMongo } from "./db/connect";
 
 const app: Express = express();
 

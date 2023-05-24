@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import { router } from "./routes/product";
 import bodyParser from "body-parser";
+import { connectMongo } from "./db/connect";
 
 const app: Express = express();
 
@@ -13,6 +14,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.use('/api', router)
 
 app.listen(8000, async () => {
-    console.log("running at http://localhost:8000")
+    await connectMongo();
+    console.log("running at http://localhost:8000");
 })
 

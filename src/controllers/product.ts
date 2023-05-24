@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import { Product } from "../entities/product";
-import { connectMongo } from "../db/connect";
 import { ProductSchema } from "../db/schemas/product";
-
-const products: Product[] = [];
+import { client } from '../db/connect';
 
 export const createProduct = async (req: Request, res: Response) => {
   // receive product from body
@@ -18,8 +16,6 @@ export const createProduct = async (req: Request, res: Response) => {
     res.status(400).send({ message: "ERROR VALIDATION BARCODE" });
 
   try {
-    // connect mongo
-    const client = await connectMongo();
 
     // invoke schema
     const productModel = client.model("Product", ProductSchema);
@@ -41,29 +37,27 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response) => {
   const productId = req.params.id;
 
-  const index = products.findIndex((product) => product.id === productId);
-  if (index === -1) {
-    return res.status(404).send({ message: "Product not found" });
+  // invoke schema
+  const productModel = client.model("Product", ProductSchema);
+
+  try {
+    await productModel.deleteOne({ _id: productId });
+    res.status(200).send({ message: "Product deleted successfully" });
+  } catch (error) {
+    res.status(400).send({ message: (error as any).message });
   }
-
-  products.splice(index, 1);
-
-  res.status(200).send({ message: "Product deleted successfully" });
 };
 
 export async function getProductById(req: Request, res: Response) {
   const { id } = req.params;
 
-  // connect mongo
-  const client = await connectMongo();
   const productModel = client.model("Product", ProductSchema);
 
-  const product = await productModel.findById(id);
-  const exist = product ? true : false;
-  if (exist)
+  try {
+    const product = await productModel.findById(id);
     return res
       .send({
         id: product?.id,
@@ -72,15 +66,19 @@ export async function getProductById(req: Request, res: Response) {
         barcode: product?.barcode,
       })
       .json();
-  return res
-    .send({
-      message: `Product not exist id: ${id}`
-    })
-    .json();
+  } catch (error) {
+    return res
+      .status(400)
+      .send({
+        message: `Product not exist id: ${id}`
+      })
+      .json();
+  }
+
+
 }
+
 export const getAllProduct = async (req: Request, res: Response) => {
-  // connect mongo
-  const client = await connectMongo();
 
   // invoke schema
   const productModel = client.model("Product", ProductSchema);
@@ -98,3 +96,33 @@ export const getAllProduct = async (req: Request, res: Response) => {
 
   return res.send({ products }).json();
 };
+
+
+export async function updateProduct(req: Request, res: Response) {
+  const { id } = req.params;
+  const productUpdated: Product = req.body;
+
+  const productModel = client.model("Product", ProductSchema);
+
+  try {
+    const product = await productModel.findById(id);
+    await productModel.updateOne({ _id: id }, { $set: { price: productUpdated.price } })
+    return res
+      .send({
+        id: product?.id,
+        name: product?.name,
+        price: productUpdated?.price,
+        barcode: product?.barcode,
+      })
+      .json();
+
+  } catch (error) {
+    return res
+      .status(400)
+      .send({
+        message: `Product not exist id: ${id}`
+      })
+      .json();
+  }
+
+}

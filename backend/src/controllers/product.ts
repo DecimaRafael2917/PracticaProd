@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Product } from "../entities/product";
 import { ProductSchema } from "../db/schemas/product";
 import { client } from '../db/connect';
@@ -78,7 +78,7 @@ export async function getProductById(req: Request, res: Response) {
 
 }
 
-export const getAllProduct = async (req: Request, res: Response) => {
+export const getAllProduct = async (req: Request, res: Response, next: NextFunction) => {
 
   // invoke schema
   const productModel = client.model("Product", ProductSchema);
@@ -94,6 +94,7 @@ export const getAllProduct = async (req: Request, res: Response) => {
     });
   });
 
+  // next()
   return res.send({ products }).json();
 };
 

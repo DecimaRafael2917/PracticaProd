@@ -1,3 +1,4 @@
+import cors from 'cors';
 import express, { Express } from "express";
 import { router } from "./routes/product";
 import bodyParser from "body-parser";
@@ -11,10 +12,12 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
+app.use(cors());
+
 app.use('/api', router)
 
 app.listen(8000, async () => {
-    await connectMongo();
-    console.log("running at http://localhost:8000");
+  await connectMongo();
+  console.log("running at http://localhost:8000");
 })
 
